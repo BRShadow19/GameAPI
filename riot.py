@@ -17,15 +17,10 @@ CHAMPION_IDS = json.load(open("champion_ids.json", "r"))
 
 # https://developer.riotgames.com/apis
 
-# TODO: download data dragon, loop through the champions, and make a new JSON with the key:value pairs being championID:championName
-
-
 # Example call
 # https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/Doublelift?api_key=RGAPI-YOUR-API-KEY
 
-# TODO: Make methods that obtain the following data from the Riot API and pull out the info we want
 
-# Top 5 champion masteries
 def get_top_5_champs(summoner_name):
     """Call the Riot API to obtain the top 5 champions of a summoner based on mastery points
 
@@ -77,6 +72,7 @@ def get_match_info(match_id, puuid):
                      }
     """
     ret = {}
+    # Different API target than some other methods, so not using the TARGET variable
     url = "https://americas.api.riotgames.com/lol/match/v5/matches/"+match_id+"?api_key="+API_KEY
     response = requests.get(url)
     if response.status_code == 200:
@@ -120,7 +116,6 @@ def get_match_info(match_id, puuid):
     return ret
         
 
-# Overview of last 5 games
 def get_last_five_games(summoner_name):
     """Call the Riot API to obtain stats about the 5 most recent games of a given summoner. 
 
@@ -142,6 +137,7 @@ def get_last_five_games(summoner_name):
     ret = []
     puuid = get_summoner_puuid(summoner_name)
     if len(puuid) > 0:    # Make sure we get a valid summoner ID
+        # Different API target than some other methods, so not using the TARGET variable
         url = "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/"+puuid+"/ids?start=0&count=5&api_key="+API_KEY
         response = requests.get(url)
         if response.status_code == 200:

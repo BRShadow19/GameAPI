@@ -91,8 +91,7 @@ def get_match_info(match_id, puuid):
         champion_name = data["info"]["participants"][participant_idx]["championName"] 
         # CS (creep score) = info->participants[index]->totalMinionsKilled
         cs = data["info"]["participants"][participant_idx]["totalMinionsKilled"]    # Lane minions
-        cs += data["info"]["participants"][participant_idx]["totalEnemyJungleMinionsKilled"]    # Enemy jungle minions
-        cs += data["info"]["participants"][participant_idx]["totalAllyJungleMinionsKilled"]     # Ally jungle minions
+        cs += data["info"]["participants"][participant_idx]["neutralMinionsKilled"]    # Jungle minions
         # game duration in seconds = info->gameDuration
             # Convert to minutes: str(datetime.timedelta(seconds=gameDuration))
             # hours:minutes:seconds

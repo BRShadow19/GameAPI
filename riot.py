@@ -28,8 +28,8 @@ def get_top_5_champs(summoner_name):
         summoner_name (str): The name of the summoner whose list of champions we want
 
     Returns:
-        dict {str: tuple of ints} -> {"champion_name" : (mastery_level, mastery_points)}
-            A dictionary where the key is the champion's name, and the value is a tuple containing the 
+        dict {str: list of ints} -> {"champion_name" : [mastery_level, mastery_points]}
+            A dictionary where the key is the champion's name, and the value is a list containing the 
                 mastery level and mastery points for that champion. Returns an empty dictionary if an
                 invalid response is received from the API
     """
@@ -46,7 +46,7 @@ def get_top_5_champs(summoner_name):
                 champion_name = get_champion_name(champion_id)
                 mastery_level = champion["championLevel"]
                 mastery_points = champion["championPoints"]
-                champion_data[champion_name] = (mastery_level, mastery_points)
+                champion_data[champion_name] = [mastery_level, mastery_points]
             ret = champion_data
     return ret
     
@@ -115,11 +115,11 @@ def get_match_info(match_id, puuid):
     return ret
         
 
-def get_last_five_games(summoner_name):
-    """Call the Riot API to obtain stats about the 5 most recent games of a given summoner. 
+def get_last_five_matches(summoner_name):
+    """Call the Riot API to obtain stats about the 5 most recent matches of a given summoner. 
 
     Args:
-        summoner_name (str): The name of the summoner whose ranked information we want
+        summoner_name (str): The name of the summoner whose match history we want
 
     Returns:
         list: List of dictionaries, with each one containing information about a match. Returns an empty list 

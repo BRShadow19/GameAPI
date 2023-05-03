@@ -21,12 +21,12 @@ CHAMPION_IDS = json.load(open("champion_ids.json", "r"))
 # https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/Doublelift?api_key=RGAPI-YOUR-API-KEY
 
 
-def get_top_5_champs(summoner_name):
-    """Call the Riot API to obtain the top 5 champions of a summoner based on mastery points
+def get_top_champs(summoner_name, count):
+    """Call the Riot API to obtain the top <count> champions of a summoner based on mastery points
 
     Args:
         summoner_name (str): The name of the summoner whose list of champions we want
-
+        count (str): The number of champions to obtain       
     Returns:
         dict {str: list of ints} -> {"champion_name" : [mastery_level, mastery_points]}
             A dictionary where the key is the champion's name, and the value is a list containing the 
@@ -36,7 +36,7 @@ def get_top_5_champs(summoner_name):
     ret = {}
     summoner_id = get_summoner_id(summoner_name)
     if len(summoner_id) > 0:    # Make sure we get a valid summoner ID
-        url = TARGET+"/lol/champion-mastery/v4/champion-masteries/by-summoner/"+summoner_id+"/top?count=5&api_key="+API_KEY
+        url = TARGET+"/lol/champion-mastery/v4/champion-masteries/by-summoner/"+summoner_id+"/top?count="+count+"&api_key="+API_KEY
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json() # List of dictionaries
@@ -115,11 +115,12 @@ def get_match_info(match_id, puuid):
     return ret
         
 
-def get_last_five_matches(summoner_name):
-    """Call the Riot API to obtain stats about the 5 most recent matches of a given summoner. 
+def get_matches(summoner_name, count):
+    """Call the Riot API to obtain stats about the <count> most recent matches of a given summoner. 
 
     Args:
         summoner_name (str): The name of the summoner whose match history we want
+        count (str): The number of games we want to get info about
 
     Returns:
         list: List of dictionaries, with each one containing information about a match. Returns an empty list 
@@ -137,7 +138,7 @@ def get_last_five_matches(summoner_name):
     puuid = get_summoner_puuid(summoner_name)
     if len(puuid) > 0:    # Make sure we get a valid summoner ID
         # Different API target than some other methods, so not using the TARGET variable
-        url = "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/"+puuid+"/ids?start=0&count=5&api_key="+API_KEY
+        url = "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/"+puuid+"/ids?start=0&count="+count+"&api_key="+API_KEY
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json() # List of match IDs

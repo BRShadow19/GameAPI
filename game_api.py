@@ -8,9 +8,11 @@ app = Flask(__name__)
 
 # TODO: Create methods and API routes for each of the game stats we want to obtain
 
+@app.route('/league/mastery/<summoner>/<count>')
 @app.route('/league/mastery/<summoner>')
-def league_mastery(summoner):
-    champions = riot.get_top_5_champs(summoner)
+def league_mastery(summoner, count="5"):
+    print(count)
+    champions = riot.get_top_champs(summoner, count)
     return jsonify(champions)
 
 
@@ -20,9 +22,10 @@ def league_rank(summoner):
     return jsonify(rank)
 
 
-@app.route('/league/five-matches/<summoner>')
-def league_last_five_matches(summoner):
-    matches = riot.get_last_five_matches(summoner)
+@app.route('/league/matches/<summoner>/<count>')
+@app.route('/league/matches/<summoner>')
+def league_matches(summoner, count="5"):
+    matches = riot.get_matches(summoner, count)
     return jsonify(matches)
 
 # Define API route to handle unknown requests

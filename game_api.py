@@ -1,5 +1,4 @@
 import json
-import socket
 import riot
 import bungie
 from flask import Flask, jsonify

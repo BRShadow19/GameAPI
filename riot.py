@@ -160,12 +160,18 @@ def get_champion_name(champion_id):
     """
     return CHAMPION_IDS[champion_id]
 
+league_codes =  {   "SOLO": "RANKED_SOLO_5x5",
+                    "TFT": "RANKED_TFT_DOUBLE_UP",
+                    "FLEX": "RANKED_FLEX_SR"
+                }
 
-def get_summoner_rank(summoner_name):
-    """Call the Riot API to get a summoner's ranked tier, division, and number of LP (i.e, SILVER II 42LP)
+def get_summoner_rank(summoner_name, league_type="SOLO"):
+    """Call the Riot API to get a summoner's ranked tier, division, and number of LP (i.e, SILVER II 42LP) 
+        within a specific league type (solo, flex, TFT, etc.)
 
     Args:
         summoner_name (str): The name of the summoner whose ranked information we want
+        league_type (str): The name of the league we want (SOLO, FLEX, or TFT)
 
     Returns:
         list: Contains the tier, division, and LP of the player at indices 0, 1, and 2, respectively. Returns an empty list if
@@ -176,9 +182,15 @@ def get_summoner_rank(summoner_name):
     if len(encryptedID) > 0 :
         url = TARGET+"/lol/league/v4/entries/by-summoner/"+encryptedID+"?api_key="+API_KEY
         response = requests.get(url)
-        data = response.json()[0]
         if response.status_code == 200:
-            ret = [data["tier"], data["rank"], data["leaguePoints"]]
+            if league_type in league_codes:
+                code = league_codes[league_type]
+            else:
+                code = league_codes["SOLO"]
+            data = response.json()
+            for league in data:
+                if league["queueType"] == code:
+                    ret = [league["tier"], league["rank"], league["leaguePoints"]]
     return ret
     
 

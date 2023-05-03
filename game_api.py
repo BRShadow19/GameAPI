@@ -15,9 +15,9 @@ def league_mastery(summoner, count="5"):
     return jsonify(champions)
 
 
-@app.route('/league/rank/<summoner>')
-def league_rank(summoner):
-    rank = riot.get_summoner_rank(summoner)
+@app.route('/league/rank/<summoner>/<league>')
+def league_rank(summoner, league="SOLO"):
+    rank = riot.get_summoner_rank(summoner, league)
     return jsonify(rank)
 
 

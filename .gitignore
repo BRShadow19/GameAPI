@@ -4,3 +4,4 @@ testing.py
 .venv
 __pycache__
 match.json
+queues.json

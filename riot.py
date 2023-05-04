@@ -14,8 +14,8 @@ TARGET = "https://na1.api.riotgames.com"
 API_KEY = os.environ.get('RIOT_KEY')     # The Riot API bot token
 TFT_KEY = os.environ.get('TFT_KEY')
 CHAMPION_IDS = json.load(open("champion_ids.json", "r"))
-
-
+# Adapted from https://static.developer.riotgames.com/docs/lol/queues.json
+GAME_IDS = json.load(open("queue_ids.json", "r"))
 # https://developer.riotgames.com/apis
 
 # Example call
@@ -65,10 +65,10 @@ def get_match_info(match_id, puuid):
         dict: Dictionary containing stats about the game. Returns an empty dictionary if an invalid response is received from the API.
             Example: {  'win': True, 
                         'KDA': '2/8/14', 
-                        'CS': 57, 
-                        'CS/min': 1.5, 
+                        'CS': '57', 
+                        'CS/min': '1.5', 
                         'duration': '0:38:59', 
-                        'championDamage': 19409, 
+                        'championDamage': '19409', 
                         'championName': 'Lux'
                      }
     """
@@ -103,20 +103,40 @@ def get_match_info(match_id, puuid):
         cs_per_minute = round(cs/duration_minutes, 1) # round to one decimal place
         # damage to champions = info->participants[index]->totalDamageDealtToChampions
         champion_damage = data["info"]["participants"][participant_idx]["totalDamageDealtToChampions"]
+        damage_per_minute = round(champion_damage/duration_minutes, 1)  # round to one decimal place
         vision_score = data["info"]["participants"][participant_idx]["visionScore"]
         self_mitigated_damage = data["info"]["participants"][participant_idx]["damageSelfMitigated"]
         gold_earned = data["info"]["participants"][participant_idx]["goldEarned"]
+        gold_per_minute = round(gold_earned/duration_minutes, 1)    # round to one decimal place
+        queue_id = str(data["info"]["queueId"])
+        queue_name = GAME_IDS[0][queue_id]
+        multikill = data["info"]["participants"][participant_idx]["largestMultiKill"]
+        multikill_type = "Single Kill"
+        if multikill == 2:
+            multikill_type = "Double Kill"
+        elif multikill == 3:
+            multikill_type = "Triple Kill!"
+        elif multikill == 4:
+            multikill_type = "Quadra Kill!!"
+        elif multikill == 5:
+            multikill_type = "PENTA KILL!!!"
+        
         ret = {
             "win": win,
             "KDA": num_kills+"/"+num_deaths+"/"+num_assists,
-            "CS": cs,
-            "CS/min": cs_per_minute,
+            "CS": str(cs),
+            "CS/min": str(cs_per_minute),
             "duration": duration_time,
-            "championDamage": champion_damage,
+            "championDamage": str(champion_damage),
             "championName": champion_name,
-            "visionScore": vision_score,
-            "selfMitigatedDamage": self_mitigated_damage,
-            "goldEarned": gold_earned
+            "visionScore": str(vision_score),
+            "selfMitigatedDamage": str(self_mitigated_damage),
+            "goldEarned": str(gold_earned),
+            "largestMultikill": multikill,
+            "multikillType": multikill_type,
+            "queueType": queue_name,
+            "gold/min": str(gold_per_minute),
+            "damage/min": str(damage_per_minute)
         }
         
     return ret

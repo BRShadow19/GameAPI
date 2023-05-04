@@ -12,6 +12,7 @@ load_dotenv('keys.env')    # Load environment variables from keys.env
 
 TARGET = "https://na1.api.riotgames.com"
 API_KEY = os.environ.get('RIOT_KEY')     # The Riot API bot token
+TFT_KEY = os.environ.get('TFT_KEY')
 CHAMPION_IDS = json.load(open("champion_ids.json", "r"))
 
 
@@ -102,6 +103,9 @@ def get_match_info(match_id, puuid):
         cs_per_minute = round(cs/duration_minutes, 1) # round to one decimal place
         # damage to champions = info->participants[index]->totalDamageDealtToChampions
         champion_damage = data["info"]["participants"][participant_idx]["totalDamageDealtToChampions"]
+        vision_score = data["info"]["participants"][participant_idx]["visionScore"]
+        self_mitigated_damage = data["info"]["participants"][participant_idx]["damageSelfMitigated"]
+        gold_earned = data["info"]["participants"][participant_idx]["goldEarned"]
         ret = {
             "win": win,
             "KDA": num_kills+"/"+num_deaths+"/"+num_assists,
@@ -109,18 +113,23 @@ def get_match_info(match_id, puuid):
             "CS/min": cs_per_minute,
             "duration": duration_time,
             "championDamage": champion_damage,
-            "championName": champion_name
+            "championName": champion_name,
+            "visionScore": vision_score,
+            "selfMitigatedDamage": self_mitigated_damage,
+            "goldEarned": gold_earned
         }
         
     return ret
         
 
-def get_matches(summoner_name, count):
-    """Call the Riot API to obtain stats about the <count> most recent matches of a given summoner. 
+def get_matches(summoner_name, count, start="0"):
+    """Call the Riot API to obtain stats about the <count> most recent matches of a given summoner, starting at 
+        a given amount of matches backwards. 
 
     Args:
         summoner_name (str): The name of the summoner whose match history we want
         count (str): The number of games we want to get info about
+        start (str): The number of the match to start looking back from (0 would be the most recent game, 1 would be two games ago, etc)
 
     Returns:
         list: List of dictionaries, with each one containing information about a match. Returns an empty list 
@@ -138,7 +147,7 @@ def get_matches(summoner_name, count):
     puuid = get_summoner_puuid(summoner_name)
     if len(puuid) > 0:    # Make sure we get a valid summoner ID
         # Different API target than some other methods, so not using the TARGET variable
-        url = "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/"+puuid+"/ids?start=0&count="+count+"&api_key="+API_KEY
+        url = "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/"+puuid+"/ids?start="+start+"&count="+count+"&api_key="+API_KEY
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json() # List of match IDs

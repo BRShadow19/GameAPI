@@ -122,14 +122,14 @@ def get_match_info(match_id, puuid):
     return ret
         
 
-def get_matches(summoner_name, count, start="0"):
+def get_matches(summoner_name, count, start="1"):
     """Call the Riot API to obtain stats about the <count> most recent matches of a given summoner, starting at 
         a given amount of matches backwards. 
 
     Args:
         summoner_name (str): The name of the summoner whose match history we want
         count (str): The number of games we want to get info about
-        start (str): The number of the match to start looking back from (0 would be the most recent game, 1 would be two games ago, etc)
+        start (str): The number of the match to start looking back from (1 would be the most recent game, 2 would be two games ago, etc)
 
     Returns:
         list: List of dictionaries, with each one containing information about a match. Returns an empty list 
@@ -147,6 +147,11 @@ def get_matches(summoner_name, count, start="0"):
     puuid = get_summoner_puuid(summoner_name)
     if len(puuid) > 0:    # Make sure we get a valid summoner ID
         # Different API target than some other methods, so not using the TARGET variable
+        start_int = int(start)
+        # Riot API zero-indexes games, so subtract one
+        if start_int > 0:
+            start_int -= 1
+        start = str(start_int)
         url = "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/"+puuid+"/ids?start="+start+"&count="+count+"&api_key="+API_KEY
         response = requests.get(url)
         if response.status_code == 200:

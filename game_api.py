@@ -28,7 +28,8 @@ def league_matches(summoner, count="5"):
     return jsonify(matches)
 
 @app.route('/league/match/<summoner>/<start>')
-def league_one_match(summoner, start):
+@app.route('/league/match/<summoner>')
+def league_one_match(summoner, start="1"):
     match = riot.get_matches(summoner, count="1", start=start)
     return jsonify(match)
 

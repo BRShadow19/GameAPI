@@ -1,0 +1,36 @@
+[
+    {
+        "CS": "64",
+        "CS/min": "2.0",
+        "KDA": "3/0/18",
+        "championDamage": "9991",
+        "championName": "Thresh",
+        "damage/min": "313.7",
+        "duration": "0:31:51",
+        "gold/min": "310.6",
+        "goldEarned": "9892",
+        "largestMultikill": 1,
+        "multikillType": "Single Kill",
+        "queueType": "Draft Pick",
+        "selfMitigatedDamage": "17306",
+        "visionScore": "83",
+        "win": true
+    },
+    {
+        "CS": "46",
+        "CS/min": "1.2",
+        "KDA": "1/6/6",
+        "championDamage": "16841",
+        "championName": "Xerath",
+        "damage/min": "444.4",
+        "duration": "0:37:54",
+        "gold/min": "235.1",
+        "goldEarned": "8912",
+        "largestMultikill": 1,
+        "multikillType": "Single Kill",
+        "queueType": "Draft Pick",
+        "selfMitigatedDamage": "8316",
+        "visionScore": "86",
+        "win": false
+    }
+]

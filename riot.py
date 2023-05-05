@@ -89,29 +89,24 @@ def get_match_info(match_id, puuid):
         # number of assists = info->participants[index]->assists
         num_assists = str(data["info"]["participants"][participant_idx]["assists"])
         
+        # Pull out all the data that we need
         champion_name = data["info"]["participants"][participant_idx]["championName"] 
-        # CS (creep score) = info->participants[index]->totalMinionsKilled
         cs = data["info"]["participants"][participant_idx]["totalMinionsKilled"]    # Lane minions
         cs += data["info"]["participants"][participant_idx]["neutralMinionsKilled"]    # Jungle minions
-        # game duration in seconds = info->gameDuration
-            # Convert to minutes: str(datetime.timedelta(seconds=gameDuration))
-            # hours:minutes:seconds
-            # or for CS/min, just do minutes=gameDuration/60
-        duration_seconds = data["info"]["gameDuration"]
-        duration_time = str(datetime.timedelta(seconds=duration_seconds))
-        duration_minutes = duration_seconds/60
+        duration_seconds = data["info"]["gameDuration"] # Game duration in seconds
+        duration_time = str(datetime.timedelta(seconds=duration_seconds))   # Duration in time format (HH:MM:SS)
+        duration_minutes = duration_seconds/60  # Duration in minutes, used for calculating <stat> per minute
         cs_per_minute = round(cs/duration_minutes, 1) # round to one decimal place
-        # damage to champions = info->participants[index]->totalDamageDealtToChampions
-        champion_damage = data["info"]["participants"][participant_idx]["totalDamageDealtToChampions"]
+        champion_damage = data["info"]["participants"][participant_idx]["totalDamageDealtToChampions"]  # Total damage dealt to enemy champions
         damage_per_minute = round(champion_damage/duration_minutes, 1)  # round to one decimal place
-        vision_score = data["info"]["participants"][participant_idx]["visionScore"]
-        self_mitigated_damage = data["info"]["participants"][participant_idx]["damageSelfMitigated"]
-        gold_earned = data["info"]["participants"][participant_idx]["goldEarned"]
+        vision_score = data["info"]["participants"][participant_idx]["visionScore"] 
+        self_mitigated_damage = data["info"]["participants"][participant_idx]["damageSelfMitigated"]    # Total incoming damage that was self-mitigated (armor, magic resist, damage reduction)
+        gold_earned = data["info"]["participants"][participant_idx]["goldEarned"]   # Total gold earned during the match
         gold_per_minute = round(gold_earned/duration_minutes, 1)    # round to one decimal place
-        queue_id = str(data["info"]["queueId"])
-        queue_name = GAME_IDS[0][queue_id]
-        multikill = data["info"]["participants"][participant_idx]["largestMultiKill"]
-        multikill_type = "Single Kill"
+        queue_id = str(data["info"]["queueId"]) # The internal ID number of the queue type (draft, blind, solo ranked, ARAM, etc)
+        queue_name = GAME_IDS[0][queue_id]  # Actual name of the queue type
+        multikill = data["info"]["participants"][participant_idx]["largestMultiKill"]   # Number of the largest multikill the player had
+        multikill_type = "Single Kill"  # Default to "Single Kill," but change if they got something higher (each one is less likely than the previous)
         if multikill == 2:
             multikill_type = "Double Kill"
         elif multikill == 3:
@@ -120,7 +115,7 @@ def get_match_info(match_id, puuid):
             multikill_type = "Quadra Kill!!"
         elif multikill == 5:
             multikill_type = "PENTA KILL!!!"
-        
+        # Throw all of our data into a dictionary, and convert most of the numbers to strings
         ret = {
             "win": win,
             "KDA": num_kills+"/"+num_deaths+"/"+num_assists,
@@ -149,18 +144,28 @@ def get_matches(summoner_name, count, start="1"):
     Args:
         summoner_name (str): The name of the summoner whose match history we want
         count (str): The number of games we want to get info about
-        start (str): The number of the match to start looking back from (1 would be the most recent game, 2 would be two games ago, etc)
+        start (str): The number of the match to start looking back from (1 would be the most recent game, 2 would be two games ago, etc).
+                        Defaults to "1"
 
     Returns:
         list: List of dictionaries, with each one containing information about a match. Returns an empty list 
                 if an invalid response is received from the API.
-                Example dictionary: {   'win': True, 
-                                        'KDA': '2/8/14', 
-                                        'CS': 57, 
-                                        'CS/min': 1.5, 
-                                        'duration': '0:38:59', 
-                                        'championDamage': 19409, 
-                                        'championName': 'Lux'
+                Example dictionary: {
+                                        "CS": "64",
+                                        "CS/min": "2.0",
+                                        "KDA": "3/0/18",
+                                        "championDamage": "9991",
+                                        "championName": "Thresh",
+                                        "damage/min": "313.7",
+                                        "duration": "0:31:51",
+                                        "gold/min": "310.6",
+                                        "goldEarned": "9892",
+                                        "largestMultikill": 1,
+                                        "multikillType": "Single Kill",
+                                        "queueType": "Draft Pick",
+                                        "selfMitigatedDamage": "17306",
+                                        "visionScore": "83",
+                                        "win": true
                                     }
     """
     ret = []
@@ -172,6 +177,7 @@ def get_matches(summoner_name, count, start="1"):
         if start_int > 0:
             start_int -= 1
         start = str(start_int)
+        # Different API target than some other methods, so not using the TARGET variable
         url = "https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/"+puuid+"/ids?start="+start+"&count="+count+"&api_key="+API_KEY
         response = requests.get(url)
         if response.status_code == 200:
@@ -195,17 +201,16 @@ def get_champion_name(champion_id):
     return CHAMPION_IDS[champion_id]
 
 league_codes =  {   "SOLO": "RANKED_SOLO_5x5",
-                    "TFT": "RANKED_TFT_DOUBLE_UP",
                     "FLEX": "RANKED_FLEX_SR"
                 }
 
 def get_summoner_rank(summoner_name, league_type="SOLO"):
     """Call the Riot API to get a summoner's ranked tier, division, and number of LP (i.e, SILVER II 42LP) 
-        within a specific league type (solo, flex, TFT, etc.)
+        within a specific league type (solo or flex)
 
     Args:
         summoner_name (str): The name of the summoner whose ranked information we want
-        league_type (str): The name of the league we want (SOLO, FLEX, or TFT)
+        league_type (str): The name of the league we want (SOLO or FLEX)
 
     Returns:
         list: Contains the tier, division, and LP of the player at indices 0, 1, and 2, respectively. Returns an empty list if

@@ -12,7 +12,7 @@ load_dotenv('keys.env')    # Load environment variables from keys.env
 
 TARGET = "https://na1.api.riotgames.com"
 API_KEY = os.environ.get('RIOT_KEY')     # The Riot API bot token
-TFT_KEY = os.environ.get('TFT_KEY')
+# TFT_KEY = os.environ.get('TFT_KEY')   # To be used later for TFT
 CHAMPION_IDS = json.load(open("champion_ids.json", "r"))
 # Adapted from https://static.developer.riotgames.com/docs/lol/queues.json
 GAME_IDS = json.load(open("queue_ids.json", "r"))

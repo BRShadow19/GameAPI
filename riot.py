@@ -36,22 +36,22 @@ def get_top_champs(summoner_name, tagline, count):
                 invalid response is received from the API
     """
     ret = {}
-    print("start of get_top_champs")
+    #print("start of get_top_champs")
     #print(str(summoner_name) + str(tagline))
     puuid = get_summoner_puuid(summoner_name, tagline)
-    print(str(len(puuid)))
+    #print(str(len(puuid)))
     #summoner_id = get_summoner_id(summoner_name)
     if len(puuid) > 0:    # Make sure we get a valid summoner ID
         #url = TARGET+"/lol/champion-mastery/v4/champion-masteries/by-summoner/"+summoner_id+"/top?count="+count+"&api_key="+API_KEY
         #puuid = get_summoner_puuid(summoner_name)
         url = TARGET+"/lol/champion-mastery/v4/champion-masteries/by-puuid/"+puuid+"/top?count="+count+"&api_key="+API_KEY
         response = requests.get(url)
-        print(url)
-        print("code: " + str(response.status_code))
+        #print(url)
+        #print("code: " + str(response.status_code))
         if response.status_code == 200:
-            print("YAY!")
+            #print("YAY!")
             data = response.json() # List of dictionaries
-            print(data)
+            #print(data)
             champion_data = {}
             for champion in data:
                 champion_id = str(champion["championId"])   # Stored as an int in the JSON response, need to cast it to a string

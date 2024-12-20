@@ -228,7 +228,8 @@ def get_summoner_rank(summoner_name, tagline, league_type="SOLO"):
                 an invalid response is received from the API.
     """
     ret = []
-    encryptedID = get_summoner_id(summoner_name, tagline)
+    puuid = get_summoner_puuid(summoner_name, tagline)
+    encryptedID = get_summoner_id(puuid)
     if len(encryptedID) > 0 :
         url = TARGET+"/lol/league/v4/entries/by-summoner/"+encryptedID+"?api_key="+API_KEY
         response = requests.get(url)
@@ -244,7 +245,7 @@ def get_summoner_rank(summoner_name, tagline, league_type="SOLO"):
     return ret
     
 
-def get_summoner_id(summoner_name, tagline):
+def get_summoner_id(puuid):
     """Call the Riot API to get the encrypted summoner ID corresponding to a given summoner name
 
     Args:
@@ -254,7 +255,7 @@ def get_summoner_id(summoner_name, tagline):
         str: The encrypted summoner ID. Returns an empty string if an invalid response is received from the API.
     """
     ret = ""
-    url = TARGET+"/riot/account/v1/accounts/by-riot-id/"+summoner_name+ "/" + tagline + "?api_key="+API_KEY
+    url = TARGET+"/lol/summoner/v4/summoners/by-puuid/"+ puuid + "?api_key="+API_KEY
     response = requests.get(url)
     data = response.json()
     if response.status_code == 200:

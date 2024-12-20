@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 load_dotenv('keys.env')    # Load environment variables from keys.env
 
 TARGET = "https://na1.api.riotgames.com"
+ACCOUNT_TARGET = "https://americas.api.riotgames.com"
 API_KEY = os.environ.get('RIOT_KEY')     # The Riot API bot token
 # TFT_KEY = os.environ.get('TFT_KEY')   # To be used later for TFT
 CHAMPION_IDS = json.load(open(os.path.join('./data-jsons', "champion_ids.json"), "r"))
@@ -22,7 +23,7 @@ GAME_IDS = json.load(open(os.path.join('./data-jsons', "queue_ids.json"), "r"))
 # https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/Doublelift?api_key=RGAPI-YOUR-API-KEY
 
 
-def get_top_champs(summoner_name, count):
+def get_top_champs(summoner_name, tagline, count):
     """Call the Riot API to obtain the top <count> champions of a summoner based on mastery points
 
     Args:
@@ -35,12 +36,22 @@ def get_top_champs(summoner_name, count):
                 invalid response is received from the API
     """
     ret = {}
-    summoner_id = get_summoner_id(summoner_name)
-    if len(summoner_id) > 0:    # Make sure we get a valid summoner ID
-        url = TARGET+"/lol/champion-mastery/v4/champion-masteries/by-summoner/"+summoner_id+"/top?count="+count+"&api_key="+API_KEY
+    print("start of get_top_champs")
+    #print(str(summoner_name) + str(tagline))
+    puuid = get_summoner_puuid(summoner_name, tagline)
+    print(str(len(puuid)))
+    #summoner_id = get_summoner_id(summoner_name)
+    if len(puuid) > 0:    # Make sure we get a valid summoner ID
+        #url = TARGET+"/lol/champion-mastery/v4/champion-masteries/by-summoner/"+summoner_id+"/top?count="+count+"&api_key="+API_KEY
+        #puuid = get_summoner_puuid(summoner_name)
+        url = TARGET+"/lol/champion-mastery/v4/champion-masteries/by-puuid/"+puuid+"/top?count="+count+"&api_key="+API_KEY
         response = requests.get(url)
+        print(url)
+        print("code: " + str(response.status_code))
         if response.status_code == 200:
+            print("YAY!")
             data = response.json() # List of dictionaries
+            print(data)
             champion_data = {}
             for champion in data:
                 champion_id = str(champion["championId"])   # Stored as an int in the JSON response, need to cast it to a string
@@ -242,8 +253,9 @@ def get_summoner_id(summoner_name):
     Returns:
         str: The encrypted summoner ID. Returns an empty string if an invalid response is received from the API.
     """
+    riot_id = summoner_name.split("#")
     ret = ""
-    url = TARGET+"/lol/summoner/v4/summoners/by-name/"+summoner_name+"?api_key="+API_KEY
+    url = TARGET+"/riot/account/v1/accounts/by-riot-id/"+riot_id[0]+ "/" + riot_id[1] + "?api_key="+API_KEY
     response = requests.get(url)
     data = response.json()
     if response.status_code == 200:
@@ -251,7 +263,7 @@ def get_summoner_id(summoner_name):
     return ret
 
 
-def get_summoner_puuid(summoner_name):
+def get_summoner_puuid(summoner_name, tagline):
     """Call the Riot API to get the unique internal player ID corresponding to a given summoner name
 
     Args:
@@ -259,9 +271,9 @@ def get_summoner_puuid(summoner_name):
 
     Returns:
         str: The unique summoner puuid. Returns an empty string if an invalid response is received from the API.
-    """
-    ret = ""
-    url = TARGET+"/lol/summoner/v4/summoners/by-name/"+summoner_name+"?api_key="+API_KEY
+    """   
+    ret = ""  
+    url = ACCOUNT_TARGET+"/riot/account/v1/accounts/by-riot-id/"+ summoner_name + "/" + tagline + "?api_key="+API_KEY
     response = requests.get(url)
     data = response.json()
     if response.status_code == 200:

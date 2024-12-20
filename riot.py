@@ -148,7 +148,7 @@ def get_match_info(match_id, puuid):
     return ret
         
 
-def get_matches(summoner_name, count, start="1"):
+def get_matches(summoner_name, tagline, count, start="1"):
     """Call the Riot API to obtain stats about the <count> most recent matches of a given summoner, starting at 
         a given amount of matches backwards. 
 
@@ -180,7 +180,7 @@ def get_matches(summoner_name, count, start="1"):
                                     }
     """
     ret = []
-    puuid = get_summoner_puuid(summoner_name)
+    puuid = get_summoner_puuid(summoner_name, tagline)
     if len(puuid) > 0:    # Make sure we get a valid summoner ID
         # Different API target than some other methods, so not using the TARGET variable
         start_int = int(start)
@@ -215,7 +215,7 @@ league_codes =  {   "SOLO": "RANKED_SOLO_5x5",
                     "FLEX": "RANKED_FLEX_SR"
                 }
 
-def get_summoner_rank(summoner_name, league_type="SOLO"):
+def get_summoner_rank(summoner_name, tagline, league_type="SOLO"):
     """Call the Riot API to get a summoner's ranked tier, division, and number of LP (i.e, SILVER II 42LP) 
         within a specific league type (solo or flex)
 
@@ -228,7 +228,7 @@ def get_summoner_rank(summoner_name, league_type="SOLO"):
                 an invalid response is received from the API.
     """
     ret = []
-    encryptedID = get_summoner_id(summoner_name)
+    encryptedID = get_summoner_id(summoner_name, tagline)
     if len(encryptedID) > 0 :
         url = TARGET+"/lol/league/v4/entries/by-summoner/"+encryptedID+"?api_key="+API_KEY
         response = requests.get(url)
@@ -244,7 +244,7 @@ def get_summoner_rank(summoner_name, league_type="SOLO"):
     return ret
     
 
-def get_summoner_id(summoner_name):
+def get_summoner_id(summoner_name, tagline):
     """Call the Riot API to get the encrypted summoner ID corresponding to a given summoner name
 
     Args:
@@ -253,9 +253,8 @@ def get_summoner_id(summoner_name):
     Returns:
         str: The encrypted summoner ID. Returns an empty string if an invalid response is received from the API.
     """
-    riot_id = summoner_name.split("#")
     ret = ""
-    url = TARGET+"/riot/account/v1/accounts/by-riot-id/"+riot_id[0]+ "/" + riot_id[1] + "?api_key="+API_KEY
+    url = TARGET+"/riot/account/v1/accounts/by-riot-id/"+summoner_name+ "/" + tagline + "?api_key="+API_KEY
     response = requests.get(url)
     data = response.json()
     if response.status_code == 200:

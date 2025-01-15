@@ -1,5 +1,6 @@
 import json
 import riot
+import tft
 from flask import Flask, jsonify
 
 app = Flask(__name__)
@@ -32,6 +33,16 @@ def league_one_match(summoner, tagline, start="1"):
     match = riot.get_matches(summoner, tagline, count="1", start=start)
     return jsonify(match)
 
+@app.route('/tft/rank/<summoner>/<tagline>/<league>')
+def tft_rank(summoner, tagline, league='RANKED'):
+    rank = tft.get_tft_rank(summoner, tagline, league)
+    return jsonify(rank)
+
+@app.route('/tft/match/<summoner>/<tagline>/<start>')
+@app.route('/tft/match/<summoner>/<tagline>')
+def tft_match(summoner, tagline, start="1"):
+    match = tft.get_matches(summoner, tagline, count="1", start=start)
+    return jsonify(match)
 
 # Define API route to handle unknown requests
 @app.route('/', defaults={'path': ''})

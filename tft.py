@@ -58,47 +58,53 @@ def get_match_info(match_id, puuid):
         #turning the total round from the API response into the stage-round format used in game
         #                               ie: round 30 ---> stage 5 round 5, or round 5-5
         stage = ((data["info"]["participants"][participant_idx]["last_round"] - 4) // 7) + 2
-        round = data["info"]["participants"][participant_idx]["last_round"] % 7
+        round = (data["info"]["participants"][participant_idx]["last_round"] -4 ) % 7
         round_reached = str(stage) + "-" + str(round)
         duration_seconds = data["info"]["participants"][participant_idx]["time_eliminated"]
         duration_time = str(datetime.timedelta(seconds=duration_seconds))   # Duration in time format (HH:MM:SS)
         traits = []
         for trait in data["info"]["participants"][participant_idx]["traits"]:
+            
             to_add={
-                "name" : data["info"]["participants"][participant_idx]["traits"][trait]["name"],
+                "name" : trait["name"][6:], #removing "TFT13_" in the name
                 #number of units of this trait that are active. used to sort when there are multiple traits of the same style 
                 #                                                                                   ie: scrap 6 > ambusher 5
-                "num_units" : data["info"]["participants"][participant_idx]["traits"][trait]["num_units"],
+                "num_units" : trait["num_units"],
                 #inactive=0, bronze=1, silver=2, unique=3, gold=4, pris=5. first level of sorting for later
-                "style" : data["info"]["participants"][participant_idx]["traits"][trait]["style"]
+                "style" : trait["style"]
             }
+            
             traits.append(to_add)
+        sorted_traits = sorted(traits, key=lambda x:x["style"], reverse=True)
         units = []
         for unit in data["info"]["participants"][participant_idx]["units"]:
             #because they are a little silly and index their costs really weirdly (1-3 cost are 0-2, 4 cost is 4, 5 is 6, 6 is 8)
-            if data["info"]["participants"][participant_idx]["units"][unit]["rarity"] < 4:
-                cost = str(data["info"]["participants"][participant_idx]["units"][unit]["rarity"] + 1)
-            if data["info"]["participants"][participant_idx]["units"][unit]["rarity"] == 4:
-                cost = str(data["info"]["participants"][participant_idx]["units"][unit]["rarity"])
-            if data["info"]["participants"][participant_idx]["units"][unit]["rarity"] == 6:
-                cost = str(data["info"]["participants"][participant_idx]["units"][unit]["rarity"] - 1)
-            if data["info"]["participants"][participant_idx]["units"][unit]["rarity"] == 8:
-                cost = str(data["info"]["participants"][participant_idx]["units"][unit]["rarity"] - 2)
+            if unit["rarity"] < 4:
+                cost = unit["rarity"] + 1
+            if unit["rarity"] == 4:
+                cost = unit["rarity"]
+            if unit["rarity"] == 6:
+                cost = unit["rarity"] - 1
+            if unit["rarity"] == 8:
+                cost = unit["rarity"] - 2
             
             to_add={
-                "name" : data["info"]["participants"][participant_idx]["units"][unit]["character_id"][4:], #removing "TFT_" in the name
-                "cost" : cost,
-                "star" : str(data["info"]["participants"][participant_idx]["units"][unit]["tier"])
+                "name" : unit["character_id"][6:], #removing "TFT_" in the name
+                "cost" : str(cost),
+                "star" : str(unit["tier"]),
+                "sort_val" : (cost*0.6) + 2**(unit["tier"]/1.5)
             }
             units.append(to_add)
+        sorted_units = sorted(units, key=lambda x:x["sort_val"], reverse=True)
+
         ret = {
             "placement" : placement,
             "win" : win,
             "level" : level,
             "round" : round_reached,
             "time_elim" : duration_time,
-            "traits" : traits,
-            "units" : units
+            "traits" : sorted_traits,
+            "units" : sorted_units
         }
         return ret
     

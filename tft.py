@@ -66,17 +66,17 @@ def get_match_info(match_id, puuid):
         for trait in data["info"]["participants"][participant_idx]["traits"]:
             
             to_add={
-                "name" : trait["name"][6:], #removing "TFT13_" in the name
+                "name" : trait["name"][6:].lower(), #removing "TFT13_" in the name
                 #number of units of this trait that are active. used to sort when there are multiple traits of the same style 
                 #                                                                                   ie: scrap 6 > ambusher 5
                 "num_units" : trait["num_units"],
-                #inactive=0, bronze=1, silver=2, unique=3, gold=4, pris=5. first level of sorting for later
+                #inactive=0, bronze=1, silver=2, unique/teamup=3, gold=4, pris=5. first level of sorting for later
                 "style" : trait["style"]
             }
             
             traits.append(to_add)
-        sorted_traits = sorted(traits, key=lambda x:x["style"], reverse=True)
-        units = []
+        sorted_traits = sorted(traits, key=lambda x: (-x['style'], -x['num_units'])) #reverse sort first by style (br, si, gld, prs etc)
+        units = []                                                                     #then by num_units to decide any ties
         for unit in data["info"]["participants"][participant_idx]["units"]:
             #because they are a little silly and index their costs really weirdly (1-3 cost are 0-2, 4 cost is 4, 5 is 6, 6 is 8)
             if unit["rarity"] < 4:
@@ -89,11 +89,13 @@ def get_match_info(match_id, puuid):
                 cost = unit["rarity"] - 2
             
             to_add={
-                "name" : unit["character_id"][6:], #removing "TFT_" in the name
+                "name" : unit["character_id"][6:].lower(), #removing "TFT_" in the name
                 "cost" : str(cost),
                 "star" : str(unit["tier"]),
                 "sort_val" : (cost*0.6) + 2**(unit["tier"]/1.5)
             }
+            if to_add["name"] == "jaycesummon":
+                to_add["sort_val"] = 0
             units.append(to_add)
         sorted_units = sorted(units, key=lambda x:x["sort_val"], reverse=True)
 

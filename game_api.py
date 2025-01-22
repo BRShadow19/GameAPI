@@ -41,8 +41,14 @@ def tft_rank(summoner, tagline, league='RANKED'):
 @app.route('/tft/match/<summoner>/<tagline>/<start>')
 @app.route('/tft/match/<summoner>/<tagline>')
 def tft_match(summoner, tagline, start="1"):
-    match = tft.get_matches(summoner, tagline, count="1", start=start)
+    match = tft.get_match(summoner, tagline, count="1", start=start)
     return jsonify(match)
+
+@app.route('/tft/matches/<summoner>/<tagline>/<count>')
+@app.route('/tft/matches/<summoner>/<tagline>')
+def tft_matches(summoner, tagline, count="10"):
+    matches = tft.get_recents(summoner, tagline, count)
+    return jsonify(matches)
 
 # Define API route to handle unknown requests
 @app.route('/', defaults={'path': ''})

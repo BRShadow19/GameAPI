@@ -110,10 +110,9 @@ def get_match_info(match_id, puuid):
         }
         return ret
     
-def get_matches(summoner_name, tagline, count, start="1"):
+def get_match(summoner_name, tagline, count, start="1"):
 
-    """Call the Riot API to obtain stats about the <count> most recent matches of a given summoner, starting at 
-        a given amount of matches backwards. 
+    """Call the Riot API to obtain stats about the most recent match of a given summoner, starting at <start> amount of matches backwards. 
 
     Args:
         summoner_name (str): The name of the summoner whose match history we want
@@ -144,6 +143,54 @@ def get_matches(summoner_name, tagline, count, start="1"):
                 ret.append(match)           
             
     return ret
+
+
+def get_recents(summoner_name, tagline,count,start = "1"): 
+    """
+    Gets the <count> most recent matches for the summoner. 
+    Separate from get_match because unlike league, the single match data is not very useful for this as it will not display any specific data from
+    matches other than the placements.  
+    """
+    placements = []
+    placement_sum = 0
+    wins=0 #wins = top fours, not first places
+    firsts=0 #first places
+    puuid = get_summoner_puuid(summoner_name, tagline)
+    if len(puuid) > 0:    # Make sure we get a valid summoner ID
+        # Different API target than some other methods, so not using the TARGET variable
+        start_int = int(start)
+        # Riot API zero-indexes games, so subtract one
+        if start_int > 0:
+            start_int -= 1
+        start = str(start_int)
+        # Different API target than some other methods, so not using the TARGET variable
+        url = "https://americas.api.riotgames.com/tft/match/v1/matches/by-puuid/"+puuid+"/ids?start="+start+"&count="+count+"&api_key="+API_KEY
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            for match_id in data:
+                match = get_match_info(match_id, puuid)
+                placement_sum += int(match["placement"])
+                if match["win"]:
+                    if(match["placement"] == "1"):
+                        firsts+=1
+                    wins+=1
+                    top4_str = "**" + match["placement"] + "**"
+                    placements.append(top4_str)
+                else:
+                    bot4_str = match["placement"]
+                    placements.append(bot4_str)
+                
+            top_four_pct = round((wins/int(count)) * 100, 2) #% of top fours rounded to three digits
+            first_pct = round((firsts/int(count)) * 100, 2) #% of firsts rounded to three digits
+            avg_place = round(placement_sum/int(count) , 2) #average placement over this group of games rounded to three digits
+            
+        ret = {"placements" : placements,
+               "top_4_pct" : str(top_four_pct),
+               "win_pct" : str(first_pct),
+               "avg_place" : str(avg_place)
+               }
+        return ret
 
 
 def get_summoner_id(puuid):

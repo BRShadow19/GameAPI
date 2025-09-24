@@ -9,6 +9,7 @@ load_dotenv('keys.env')
 TARGET = "https://na1.api.riotgames.com"
 ACCOUNT_TARGET = "https://americas.api.riotgames.com"
 API_KEY = os.environ.get('TFT_KEY')
+GEN_API_KEY = os.environ.get('RIOT_KEY') #API key for general use requests (puuid)
 
 tft_codes = {
     "SOLO" : "RANKED_TFT",
@@ -203,7 +204,7 @@ def get_summoner_id(puuid):
         str: The encrypted summoner ID. Returns an empty string if an invalid response is received from the API.
     """
     ret = ""
-    url = TARGET+"/lol/summoner/v4/summoners/by-puuid/"+ puuid + "?api_key="+API_KEY
+    url = TARGET+"/lol/summoner/v4/summoners/by-puuid/"+ puuid + "?api_key="+GEN_API_KEY
     response = requests.get(url)
     data = response.json()
     if response.status_code == 200:

@@ -231,8 +231,10 @@ def get_summoner_rank(summoner_name, tagline, league_type="SOLO"):
     puuid = get_summoner_puuid(summoner_name, tagline)
     encryptedID = get_summoner_id(puuid)
     if len(encryptedID) > 0 :
-        url = TARGET+"/lol/league/v4/entries/by-summoner/"+encryptedID+"?api_key="+API_KEY
+        url = TARGET+"/lol/league/v4/entries/by-puuid/"+encryptedID+"?api_key="+API_KEY
+        #print(url)
         response = requests.get(url)
+        #print(str(response))
         if response.status_code == 200:
             if league_type in league_codes:
                 code = league_codes[league_type]
@@ -243,7 +245,7 @@ def get_summoner_rank(summoner_name, tagline, league_type="SOLO"):
                 if league["queueType"] == code:
                     ret = [league["tier"], league["rank"], league["leaguePoints"]]
     return ret
-    
+
 
 def get_summoner_id(puuid):
     """Call the Riot API to get the encrypted summoner ID corresponding to a given summoner name
@@ -256,10 +258,13 @@ def get_summoner_id(puuid):
     """
     ret = ""
     url = TARGET+"/lol/summoner/v4/summoners/by-puuid/"+ puuid + "?api_key="+API_KEY
+    #print(url)
     response = requests.get(url)
     data = response.json()
+    #print(response.status_code)
     if response.status_code == 200:
-        ret = data["id"]
+        #print("get_summoner_id good")
+        ret = data["puuid"]
     return ret
 
 
@@ -274,8 +279,11 @@ def get_summoner_puuid(summoner_name, tagline):
     """   
     ret = ""  
     url = ACCOUNT_TARGET+"/riot/account/v1/accounts/by-riot-id/"+ summoner_name + "/" + tagline + "?api_key="+API_KEY
+    #print(url)
     response = requests.get(url)
     data = response.json()
+    #print(response.status_code)
     if response.status_code == 200:
+        #print("get_puuid good")
         ret = data["puuid"]
     return ret
